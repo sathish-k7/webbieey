@@ -12,10 +12,10 @@ images:
     type: Attribute
     attribute: data-a-dynamic-image
 rating:
-    css: span.arp-rating-out-of-text
+    css: 'span[data-asin="B07Q3T3QXQ"] .arp-rating-out-of-text'
     type: Text
 number_of_reviews:
-    css: 'a.a-link-normal h2'
+    css: 'span[data-asin="B07Q3T3QXQ"] .a-size-base'
     type: Text
 variants:
     css: 'form.a-section li'
@@ -37,5 +37,16 @@ sales_rank:
     css: 'li#SalesRank'
     type: Text
 link_to_all_reviews:
-    css: 'div.card-padding a.a-link-emphasis'
+    css: 'a[data-hook="see-all-reviews-link-foot"]'
+    type: Link
+reviews:
+    css: 'div.review'
+    multiple: true
+    type: Text
+    children:
+        review_text:
+            css: 'span[data-hook="review-body"] span'
+            type: Text
+next_page:
+    css: 'li.a-last a'
     type: Link

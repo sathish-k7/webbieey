@@ -1,14 +1,11 @@
 from selectorlib import Extractor
 import requests 
-import json 
 from time import sleep
 
-
 # Create an Extractor by reading from the YAML file
-e = Extractor.from_yaml_file('search_results.yml')
+e = Extractor.from_yaml_file('selectors.yml')
 
 def scrape(url):  
-
     headers = {
         'dnt': '1',
         'upgrade-insecure-requests': '1',
@@ -23,27 +20,34 @@ def scrape(url):
     }
 
     # Download the page using requests
-    print("Downloading %s"%url)
+    print("Downloading %s" % url)
     r = requests.get(url, headers=headers)
+
     # Simple check to check if page was blocked (Usually 503)
     if r.status_code > 500:
         if "To discuss automated access to Amazon data please contact" in r.text:
-            print("Page %s was blocked by Amazon. Please try using better proxies\n"%url)
+            print("Page %s was blocked by Amazon. Please try using better proxies\n" % url)
         else:
-            print("Page %s must have been blocked by Amazon as the status code was %d"%(url,r.status_code))
+            print("Page %s must have been blocked by Amazon as the status code was %d" % (url, r.status_code))
         return None
-    # Pass the HTML of the page and create 
+
+    # Extract data using Selectorlib
     return e.extract(r.text)
 
-# product_data = []
-with open("search_results_urls.txt",'r') as urllist, open('search_results_output.jsonl','w') as outfile:
+def write_product_details(outfile, product_details):
+    outfile.write(f"Product Title: {product_details['name']}\n")
+    outfile.write(f"Price: {product_details['price']}\n")
+    outfile.write(f"Short Description:\n{product_details['short_description']}\n")
+    outfile.write(f"Product Description:\n{product_details['product_description']}\n")
+    outfile.write(f"Images: {', '.join(product_details['images'])}\n")
+    outfile.write(f"Rating: {product_details['rating']}\n")
+    outfile.write(f"Number of Reviews: {product_details['number_of_reviews']}\n")
+    outfile.write(f"Link to All Reviews: {product_details['link_to_all_reviews']}\n")
+    outfile.write("\n")
+
+# Read URLs from the file and extract product details
+with open("urls.txt", 'r') as urllist, open('output.txt', 'w', encoding='utf-8') as outfile:
     for url in urllist.read().splitlines():
         data = scrape(url) 
         if data:
-            for product in data['products']:
-                product['search_url'] = url
-                print("Saving Product: %s"%product['title'])
-                json.dump(product,outfile)
-                outfile.write("\n")
-                # sleep(5)
-    
+            write_product_details(outfile, data)
