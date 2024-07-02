@@ -1,2 +1,6 @@
 selectorlib
 requests
+tf-keras
+transformers
+tensorflow
+pytorch
