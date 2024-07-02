@@ -1,7 +1,7 @@
 from transformers import pipeline
 import time
 
-# Initialize the summarization pipeline with the BART model
+# Initialize the summarization pipeline
 summarizer = pipeline("summarization", model="t5-small", tokenizer="t5-small", framework="pt")
 
 # Function to generate key points from the summary

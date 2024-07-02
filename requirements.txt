@@ -3,4 +3,4 @@ requests
 tf-keras
 transformers
 tensorflow
-pytorch
+torch
