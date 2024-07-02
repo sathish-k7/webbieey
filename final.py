@@ -84,5 +84,5 @@ with open("urls.txt", 'r') as urllist, open('output.txt', 'w') as outfile:
             product_details['top_positive_review'] = 'No positive review found'
             product_details['top_critical_review'] = 'No critical review found'
 
-        with open('output.txt', 'a') as outfile:
+        with open('output.txt', 'a', encoding='UTF-8') as outfile:
             write_product_details(outfile, product_details)
