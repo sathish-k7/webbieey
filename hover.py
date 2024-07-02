@@ -12,10 +12,6 @@ service = Service(driver_path)
 # Initialize the Chrome WebDriver with the specified service
 driver = webdriver.Chrome(service=service)
 
-# Open the e-commerce website
-website_url = 'https://www.amazon.in/s?k=headphones&crid=2LYIZ008ISSMO&sprefix=head%2Caps%2C232&ref=nb_sb_ss_ts-doa-p_2_4'
-driver.get(website_url)
-
 # Inject JavaScript to detect hover events and capture URLs
 hover_script = """
     var hoveredURLs = [];
@@ -31,36 +27,38 @@ hover_script = """
     };
 """
 
-driver.execute_script(hover_script)
+# Open the Amazon search results page
+print("Please navigate to the Amazon search results page and hover over products to capture their URLs.")
+print("Close the browser window when done...")
 
-print("Hover over products to capture their URLs. Close the browser window when done...")
+# Execute the hover script
+driver.execute_script(hover_script)
 
 # Python list to store the URLs
 urls_list = []
 
-# Wait for the user to manually hover over products
-while True:
-    try:
+# Continuously capture URLs while the browser is open
+try:
+    while True:
         time.sleep(1)  # Check every second
         hovered_urls = driver.execute_script("return window.getHoveredURLs();")
-        # Extend the list to avoid nested lists
-        urls_list.extend([url for url in hovered_urls if url not in urls_list])
-    except:
-        # Browser window closed
-        break
-
-# Close the browser
-driver.quit()
+        new_urls = [url for url in hovered_urls if url not in urls_list]
+        if new_urls:
+            with open('urls.txt', 'a') as file:
+                for url in new_urls:
+                    file.write(url + '\n')
+                    urls_list.append(url)
+            print(f"Captured {len(new_urls)} new URLs")
+except KeyboardInterrupt:
+    print("User interrupted the process.")
+finally:
+    # Close the browser
+    driver.quit()
 
 # Print all captured URLs
 print("Captured Product URLs:")
 for url in urls_list:
     print(url)
 print(f"Total URLs captured: {len(urls_list)}")
-
-# Write captured URLs to urls.txt
-with open('urls.txt', 'w') as file:
-    for url in urls_list:
-        file.write(url + '\n')
 
 print("URLs saved to urls.txt")

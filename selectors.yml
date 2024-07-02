@@ -2,7 +2,7 @@ name:
     css: '#productTitle'
     type: Text
 price:
-    css: '#price_inside_buybox'
+    css: '#price_inside_buybox, #priceblock_ourprice, #priceblock_dealprice, span[data-asin-price], .a-price .a-offscreen'
     type: Text
 short_description:
     css: '#featurebullets_feature_div'
@@ -12,10 +12,10 @@ images:
     type: Attribute
     attribute: data-a-dynamic-image
 rating:
-    css: 'span[data-asin="B07Q3T3QXQ"] .arp-rating-out-of-text'
+    css: '.a-icon.a-icon-star .a-icon-alt'
     type: Text
 number_of_reviews:
-    css: 'span[data-asin="B07Q3T3QXQ"] .a-size-base'
+    css: '#acrCustomerReviewText'
     type: Text
 variants:
     css: 'form.a-section li'
@@ -39,14 +39,14 @@ sales_rank:
 link_to_all_reviews:
     css: 'a[data-hook="see-all-reviews-link-foot"]'
     type: Link
-reviews:
-    css: 'div.review'
-    multiple: true
+top_positive_review:
+    css: 'div.a-column.a-span6.view-point-review.positive-review div.a-expander-content div.a-row.a-spacing-top-mini span'
     type: Text
-    children:
-        review_text:
-            css: 'span[data-hook="review-body"] span'
-            type: Text
+top_critical_review:
+    css: 'div.a-column.a-span6.view-point-review.critical-review div.a-expander-content div.a-row.a-spacing-top-mini span'
+    type: Text
 next_page:
     css: 'li.a-last a'
     type: Link
+
+
