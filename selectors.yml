@@ -31,8 +31,13 @@ variants:
             type: Attribute
             attribute: data-defaultasin
 product_description:
-    css: '#productDescription'
+    css: '#productDescription p, #aplus p, #dpx-aplus-product-description_feature_div p'
     type: Text
+    multiple: true
+    filters:
+        - strip_tags
+        - strip
+        - join: ' '
 sales_rank:
     css: 'li#SalesRank'
     type: Text

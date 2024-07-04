@@ -4,3 +4,5 @@ tf-keras
 transformers
 tensorflow
 torch
+selenium
+chromedriver_py
