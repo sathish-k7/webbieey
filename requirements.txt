@@ -5,4 +5,7 @@ transformers
 tensorflow
 torch
 selenium
-chromedriver_py
+chromedriver_pyd
+flask
+flask-cors
+urllib3

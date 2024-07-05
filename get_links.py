@@ -43,7 +43,7 @@ def signal_handler(sig, frame):
     sys.exit(0)
 
 if __name__ == '__main__':
-    fetcher = LinkFetcher(server_url='http://127.0.0.1:5000', interval=5)
+    fetcher = LinkFetcher(server_url='http://127.0.0.1:5000', interval=1)
 
     # Handle termination signals for graceful shutdown
     signal.signal(signal.SIGINT, signal_handler)

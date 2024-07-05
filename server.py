@@ -7,7 +7,6 @@ CORS(app)  # Enable CORS for all routes
 
 links = []
 
-
 @app.route('/store_link', methods=['POST'])
 def store_link():
     try:
@@ -23,17 +22,24 @@ def store_link():
     if parsed_url.scheme not in ['http', 'https']:  # Basic URL validation
         return jsonify({"message": "Invalid URL"}), 400
 
-    if link in links:
-        return jsonify({"message": "Link already exists"}), 400
-
-    links.append(link)
-    return jsonify({"message": "Link stored"}), 200
-
+    if link not in links:
+        links.append(link)
+        # Process the link to extract product information
+        # This is a sample response, replace it with actual data extraction logic
+        product_info = {
+            "title": "Sample Product",
+            "description": "This is a sample product description.",
+            "price": "$19.99",
+            "rating": "4.5/5"
+        }
+        return jsonify(product_info), 200
+    else:
+        # Return existing product information if link already processed
+        return jsonify({"message": "Link already exists"}), 200
 
 @app.route('/get_links', methods=['GET'])
 def get_links():
     return jsonify({"links": links}), 200
-
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
