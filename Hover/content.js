@@ -124,4 +124,4 @@ function periodicallySendLinks() {
 }
 
 // Call periodicallySendLinks every 3 seconds (3000 milliseconds)
-setInterval(periodicallySendLinks, 3000);
+setInterval(periodicallySendLinks, 300);
