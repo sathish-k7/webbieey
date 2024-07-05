@@ -1,9 +1,11 @@
 from selectorlib import Extractor
+from summarizer import summarize_and_generate_points
 import requests
 import time
 from urllib.parse import urljoin
 import json
 import os
+
 
 product_extractor = Extractor.from_yaml_file('selectors.yml')
 
@@ -77,6 +79,7 @@ def extractor(input_file='urls.txt', output_file='output.json'):
     with open(input_file, 'r') as urllist:
         for url in urllist.read().splitlines():
             try:
+                start_time = time.time()
                 product_details = scrape_product_details(url)
                 if product_details and 'link_to_all_reviews' in product_details:
                     reviews = scrape_reviews(url, product_details['link_to_all_reviews'])
@@ -86,7 +89,14 @@ def extractor(input_file='urls.txt', output_file='output.json'):
                     product_details['top_critical_review'] = 'No critical review found'
 
                 write_product_details(output_file, product_details)
-                time.sleep(1)  # Add a delay to avoid overloading the server
+                key_points = summarize_and_generate_points(product_details['short_description'])
+                print("\nGenerated Key Points:")
+                for i, point in enumerate(key_points, 1):
+                    print(f"{i}. {point.strip()}.")
+
+                stop_time = time.time()
+                print(f"Time taken to extract and summarize product details: {stop_time - start_time:.2f} seconds")
+
             except Exception as e:
                 print(f"Error processing {url}: {str(e)}")
 
