@@ -83,8 +83,10 @@ def extractor(url='', output_file='output.json'):
         write_product_details(output_file, product_details)
         key_points = summarize_and_generate_points(product_details['short_description'])
         print("\nGenerated Key Points:")
-        for i, point in enumerate(key_points, 1):
-            print(f"{i}. {point.strip()}.")
+        with open('output.txt' , 'w') as f:
+            for i, point in enumerate(key_points, 1):
+                print(f"{i}. {point.strip()}.")
+                f.write(f"{i}.{point.strip()}.\n")
         stop_time = time.time()
         print(f"Time taken to extract and summarize product details: {stop_time - start_time:.2f} seconds")
 
