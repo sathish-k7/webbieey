@@ -1,127 +1,114 @@
-let hoverTimer;
-let currentLink;
+// ==UserScript==
+// @name         Amazon Hover Popup with Stable Blur
+// @namespace    http://tampermonkey.net/
+// @version      1.9
+// @description  Show popup on Amazon product hover and blur background with stable effect
+// @author       Your Name
+// @match        *://www.amazon.com/*
+// @match        *://www.amazon.in/*
+// @grant        none
+// ==/UserScript==
 
-// Event listener for mouseover event
-document.body.addEventListener('mouseover', function(event) {
-  let element = event.target;
-  while (element) {
-    if (element.tagName === 'A' && element.href) {
-      currentLink = element.href;
-      hoverTimer = setTimeout(fetchAndShowProductInfo, 2000); // 2000 milliseconds = 2 seconds
-      break;
-    }
-    element = element.parentElement;
-  }
-});
+(function () {
+  "use strict";
 
-// Event listener for mouseout event
-document.body.addEventListener('mouseout', function(event) {
-  clearTimeout(hoverTimer);
-  // Check if the mouse has moved to the overlay itself
-  let relatedTarget = event.relatedTarget;
-  if (!relatedTarget || relatedTarget.id !== 'product-overlay') {
-    hideProductOverlay();
-  }
-});
-
-// Function to fetch and show product information
-function fetchAndShowProductInfo() {
-  fetch('http://127.0.0.1:5000/store_link', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ link: currentLink })
-  })
-  .then(response => {
-    if (!response.ok) {
-      throw new Error('Network response was not ok');
-    }
-    return response.json();
-  })
-  .then(productInfo => {
-    showProductOverlay(productInfo);
-  })
-  .catch(error => {
-    console.error('Error fetching product information:', error);
-  });
-}
-
-// Function to show product overlay
-function showProductOverlay(productInfo) {
-  // Blur background
-  document.body.style.filter = 'blur(5px)';
-
-  // Check if overlay already exists
-  let overlay = document.getElementById('product-overlay');
-  
-  if (!overlay) {
-    // Create overlay div if it doesn't exist
-    overlay = document.createElement('div');
-    overlay.id = 'product-overlay';
-    overlay.style.position = 'fixed';
-    overlay.style.top = '50%';
-    overlay.style.left = '50%';
-    overlay.style.transform = 'translate(-50%, -50%)';
-    overlay.style.background = 'white';
-    overlay.style.padding = '20px';
-    overlay.style.zIndex = '9999';
-    document.body.appendChild(overlay);
-
-    // Prevent the overlay from hiding when hovering over it
-    overlay.addEventListener('mouseover', function() {
-      clearTimeout(hoverTimer);
-    });
-    overlay.addEventListener('mouseout', function() {
-      hideProductOverlay();
-    });
-  }
-
-  // Update overlay content
-  overlay.innerHTML = `
-    <h2>${productInfo.title}</h2>
-    <p>${productInfo.description}</p>
-    <p>Price: ${productInfo.price}</p>
-    <p>Rating: ${productInfo.rating}</p>
+  // Add styles for the blurred background and popup
+  const style = document.createElement("style");
+  style.innerHTML = `
+      .blurred-background *:not(#hover-popup) {
+          filter: blur(5px) !important;
+          pointer-events: none; /* Prevents interaction with the blurred background */
+      }
+      #hover-popup {
+          display: none;
+          position: fixed;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          background-color: white;
+          padding: 20px;
+          border: 1px solid black;
+          z-index: 10000;
+          width: 50%;
+          height: 50%;
+          box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+          overflow: auto; /* Allows content overflow to be scrollable */
+      }
   `;
+  document.head.appendChild(style);
 
-  // Display overlay
-  overlay.style.display = 'block';
-}
+  // Create the popup element
+  const popup = document.createElement("div");
+  popup.id = "hover-popup";
+  popup.innerText = ""; // Placeholder content
+  document.body.appendChild(popup);
 
-// Function to hide product overlay
-function hideProductOverlay() {
-  // Hide overlay if it exists
-  let overlay = document.getElementById('product-overlay');
-  if (overlay) {
-    overlay.style.display = 'none';
+  let hoverTimeout;
+  let isHovered = false;
+
+  // Function to show the popup and blur the background
+  function showPopup() {
+    if (!isHovered) {
+      document.body.classList.add("blurred-background");
+      popup.style.display = "block";
+      isHovered = true;
+    }
   }
 
-  // Unblur background
-  document.body.style.filter = 'none';
-}
-
-// Function for periodic updates of links
-function periodicallySendLinks() {
-  let links = []; // Placeholder for actual logic to collect links
-
-  // Send links to Flask server
-  fetch('http://127.0.0.1:5000/store_link', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ links: links })
-  })
-  .then(response => {
-    if (!response.ok) {
-      throw new Error('Network response was not ok');
+  // Function to hide the popup and remove the blur from the background
+  function hidePopup() {
+    if (isHovered) {
+      document.body.classList.remove("blurred-background");
+      popup.style.display = "none";
+      isHovered = false;
     }
-    return response.json();
-  })
-  .then(data => console.log('Links updated on server:', data))
-  .catch(error => console.error('Error updating links:', error));
-}
+  }
 
-// Call periodicallySendLinks every 3 seconds (3000 milliseconds)
-setInterval(periodicallySendLinks, 3000);
+  // Event listener to handle hover over product links
+  document.addEventListener("mouseover", function (e) {
+    const link = e.target.closest('a[href*="/dp/"], a[href*="/sspa/"]');
+    if (link && (link.href.includes("/dp/") || link.href.includes("/sspa/"))) {
+      clearTimeout(hoverTimeout);
+      hoverTimeout = setTimeout(() => {
+        showPopup();
+        sendLinkToServer(link.href);
+      }, 2000); // 2000 milliseconds = 2 seconds
+    }
+  });
+
+  // Event listener to handle moving cursor away from product links
+  document.addEventListener("mouseout", function (e) {
+    const link = e.target.closest('a[href*="/dp/"], a[href*="/sspa/"]');
+    if (link && (link.href.includes("/dp/") || link.href.includes("/sspa/"))) {
+      clearTimeout(hoverTimeout);
+      hoverTimeout = setTimeout(hidePopup, 300);
+    }
+  });
+
+  // Keep the popup visible if the cursor is over it
+  popup.addEventListener("mouseover", function () {
+    clearTimeout(hoverTimeout);
+  });
+
+  popup.addEventListener("mouseout", function () {
+    hoverTimeout = setTimeout(hidePopup, 300);
+  });
+
+  function sendLinkToServer(link) {
+    fetch("http://127.0.0.1:5000/store_link", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ link: link }),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        return response.json();
+      })
+      .then((data) => console.log("Link sent to server:", data))
+      .catch((error) => console.error("Error sending link:", error));
+  }
+})();
